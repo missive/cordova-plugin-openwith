@@ -167,10 +167,10 @@
                 if([(NSObject*)data isKindOfClass:[UIImage class]]) {
                     UIImage* image = (UIImage*) data;
                     if(image != nil) {
-                        NSURL *targetUrl = [[self.fileManager containerURLForSecurityApplicationGroupIdentifier:SHAREEXT_GROUP_IDENTIFIER] URLByAppendingPathComponent:@"share/"];
+                        NSURL *targetUrl = [[self.fileManager containerURLForSecurityApplicationGroupIdentifier:SHAREEXT_GROUP_IDENTIFIER] URLByAppendingPathComponent:@"share.png"];
                         NSData * binaryImageData = UIImagePNGRepresentation(image);
 
-                        [binaryImageData writeToFile:[targetUrl.absoluteString stringByAppendingPathComponent:@"share.png"] atomically:YES];
+                        BOOL done = [binaryImageData writeToFile:[targetUrl.absoluteString substringFromIndex:6] atomically:YES];
                         NSString *uti = @"public.image";
                         NSString *registeredType = nil;
                                         
@@ -180,14 +180,14 @@
                                 registeredType = uti;
                         }
                                         
-                        NSString *mimeType =  [self mimeTypeFromUti:registeredType];
-                        NSString* fileUrl = [NSString stringWithFormat:@"%@/share.png",targetUrl];
+                        NSString *mimeType =  @"image/png";
+                        NSString* fileUrl = targetUrl.absoluteString;
                         NSDictionary *dict = @{
                                 @"text" : self.contentText,
                                 @"fileUrl" : fileUrl,
                                 @"uti"  : uti,
                                 @"utis" : itemProvider.registeredTypeIdentifiers,
-                                @"name" : @"share",
+                                @"name" : @"share.png",
                                 @"type" : mimeType
                         };
                         [items addObject:dict];
