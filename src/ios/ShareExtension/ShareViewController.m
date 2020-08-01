@@ -112,10 +112,6 @@
         if ([itemProvider hasItemConformingToTypeIdentifier:@"public.movie"]) {
             [self debug:[NSString stringWithFormat:@"item provider = %@", itemProvider]];
             
-            if (([lastDataType length] > 0) && ![lastDataType isEqualToString:@"FILE"]) {
-                --remainingAttachments;
-                continue;
-            }
             
             lastDataType = [NSString stringWithFormat:@"FILE"];
             
@@ -155,10 +151,6 @@
         else if ([itemProvider hasItemConformingToTypeIdentifier:@"public.image"]) {
             [self debug:[NSString stringWithFormat:@"item provider = %@", itemProvider]];
             
-            if (([lastDataType length] > 0) && ![lastDataType isEqualToString:@"FILE"]) {
-                --remainingAttachments;
-                continue;
-            }
             
             lastDataType = [NSString stringWithFormat:@"FILE"];
             
@@ -247,11 +239,7 @@
         // FILE
         else if ([itemProvider hasItemConformingToTypeIdentifier:@"public.file-url"]) {
             [self debug:[NSString stringWithFormat:@"item provider = %@", itemProvider]];
-            
-            if (([lastDataType length] > 0) && ![lastDataType isEqualToString:@"FILE"]) {
-                --remainingAttachments;
-                continue;
-            }
+        
             
             lastDataType = [NSString stringWithFormat:@"FILE"];
             
@@ -351,13 +339,9 @@
         }
         
         // TEXT
-        else if ([itemProvider hasItemConformingToTypeIdentifier:@"public.text"]) {
+        else if ([itemProvider hasItemConformingToTypeIdentifier:@"public.text"] ) {
             [self debug:[NSString stringWithFormat:@"item provider = %@", itemProvider]];
-            
-            if ([lastDataType length] > 0 && ![lastDataType isEqualToString:@"TEXT"]) {
-                --remainingAttachments;
-                continue;
-            }
+        
             
             lastDataType = [NSString stringWithFormat:@"TEXT"];
             
@@ -393,7 +377,40 @@
                 }
             }];
         }
-        
+        else if([itemProvider hasItemConformingToTypeIdentifier:@"public.plain-text"]) {
+            [self debug:[NSString stringWithFormat:@"item provider = %@", itemProvider]];
+            [itemProvider loadItemForTypeIdentifier:@"public.plain-text" options:nil completionHandler: ^(id<NSSecureCoding> data, NSError *error) {
+                NSLog(@"%@",data);
+                if( [(NSObject*)data isKindOfClass:[NSString class]]) {
+                    NSString* item = (NSString *) data;
+                    if( item == nil || error != nil) {
+                        --remainingAttachments;
+                        if (remainingAttachments == 0) {
+                            [self sendResults:results];
+                        }
+                        return;
+                    }
+                    [self debug:[NSString stringWithFormat:@"public.plain-text = %@", item]];
+                    
+                    NSString *uti = @"public.plain-text";
+                    NSDictionary *dict = @{
+                        @"text" : self.contentText,
+                        @"data" : item,
+                        @"uti": uti,
+                        @"utis": itemProvider.registeredTypeIdentifiers,
+                        @"name": @"",
+                        @"type": [self mimeTypeFromUti:uti],
+                    };
+                    
+                    [items addObject:dict];
+                    
+                    --remainingAttachments;
+                    if (remainingAttachments == 0) {
+                        [self sendResults:results];
+                    }
+                }
+            }];
+        }
         // Unhandled data type
         else {
             --remainingAttachments;
