@@ -53,6 +53,13 @@ cordova plugin add cordova-plugin-openwith \
 
 It shouldn't be too hard. But just in case, Jean-Christophe Hoelt [posted a screencast of it](https://youtu.be/eaE4m_xO1mg).
 
+If you want to launch it as a task independent of chrome 83 or higher, please add the following.
+```
+<edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application/activity">
+  <activity android:name="com.missiveapp.openwith.OpenWithActivity" />
+</edit-config>
+```
+
 ## Usage
 
 ```js
