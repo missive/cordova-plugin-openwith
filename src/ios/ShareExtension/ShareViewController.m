@@ -89,6 +89,11 @@
   }
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    self.view.hidden = YES;
+}
+
 - (void) viewDidAppear:(BOOL)animated {
   [self.view endEditing:YES];
 
