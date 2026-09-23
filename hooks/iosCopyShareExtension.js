@@ -49,8 +49,7 @@ function copyFolderRecursiveSync(source, target, preferences) {
 module.exports = function(context) {
   log('Copying ShareExtension files to iOS project')
 
-  var deferral = require('q').defer();
-
+  return new Promise(function(resolve) {
   findXCodeproject(context, function(projectFolder, projectName) {
     var preferences = getPreferences(context, projectName);
 
@@ -62,8 +61,7 @@ module.exports = function(context) {
     }
 
     copyFolderRecursiveSync(srcFolder, targetFolder, preferences);
-    deferral.resolve();
+    resolve();
   });
-
-  return deferral.promise;
+  });
 };
