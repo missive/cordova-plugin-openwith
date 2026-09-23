@@ -62,8 +62,7 @@ function getShareExtensionFiles(context) {
 module.exports = function(context) {
   log('Adding ShareExt target to XCode project')
 
-  var deferral = require('q').defer();
-
+  return new Promise(function(resolve) {
   findXCodeproject(context, function(projectFolder, projectName) {
     var preferences = getPreferences(context, projectName);
 
@@ -137,8 +136,7 @@ module.exports = function(context) {
     fs.writeFileSync(pbxProjectPath, pbxProject.writeSync());
     log('Successfully added ShareExt target to XCode project')
 
-    deferral.resolve();
+    resolve();
   });
-
-  return deferral.promise;
+  });
 };
