@@ -1,6 +1,6 @@
 package com.missiveapp.openwith;
 
-import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import java.util.Arrays;
@@ -209,10 +209,9 @@ public class OpenWithPlugin extends CordovaPlugin {
    */
   private JSONObject toJSONObject(final Intent intent) {
     try {
-      final ContentResolver contentResolver = this.cordova
-        .getActivity().getApplicationContext().getContentResolver();
+      final Context context = this.cordova.getActivity().getApplicationContext();
 
-      return Serializer.toJSONObject(contentResolver, intent);
+      return Serializer.toJSONObject(context, intent);
     } catch (JSONException e) {
       log(ERROR, "Error converting intent to JSON: " + e.getMessage());
       log(ERROR, Arrays.toString(e.getStackTrace()));

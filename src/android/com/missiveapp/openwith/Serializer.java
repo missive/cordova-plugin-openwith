@@ -2,7 +2,9 @@ package com.missiveapp.openwith;
 
 import android.content.ClipData;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -24,7 +26,7 @@ class Serializer {
    * If none are specified, null is return.
    */
   public static JSONObject toJSONObject(
-          final ContentResolver contentResolver,
+          final Context context,
           final Intent intent)
          throws JSONException
   {
@@ -33,11 +35,11 @@ class Serializer {
     if ("text/plain".equals(intent.getType())) {
       items = itemsFromIntent(intent);
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      items = itemsFromClipData(contentResolver, intent.getClipData());
+      items = itemsFromClipData(context, intent.getClipData());
     }
 
     if (items == null || items.length() == 0) {
-      items = itemsFromExtras(contentResolver, intent.getExtras());
+      items = itemsFromExtras(context, intent.getExtras());
     }
 
     if (items == null) {
@@ -94,19 +96,22 @@ class Serializer {
    *
    * Defaults to null. */
   public static JSONArray itemsFromClipData(
-          final ContentResolver contentResolver,
+          final Context context,
           final ClipData clipData)
          throws JSONException
   {
     if (clipData != null) {
       final int clipItemCount = clipData.getItemCount();
-      JSONObject[] items = new JSONObject[clipItemCount];
+      final JSONArray items = new JSONArray();
 
       for (int i = 0; i < clipItemCount; i++) {
-        items[i] = toJSONObject(contentResolver, clipData.getItemAt(i).getUri());
+        final JSONObject item = toJSONObject(context, clipData.getItemAt(i).getUri());
+        if (item != null) {
+          items.put(item);
+        }
       }
 
-      return new JSONArray(items);
+      return items;
     }
 
     return null;
@@ -116,7 +121,7 @@ class Serializer {
    *
    * See Intent.EXTRA_STREAM for details. */
   public static JSONArray itemsFromExtras(
-          final ContentResolver contentResolver,
+          final Context context,
           final Bundle extras)
          throws JSONException
   {
@@ -124,10 +129,12 @@ class Serializer {
       return null;
     }
 
-    final JSONObject item = toJSONObject(
-      contentResolver,
-      (Uri) extras.get(Intent.EXTRA_STREAM)
-    );
+    final Object stream = extras.get(Intent.EXTRA_STREAM);
+    if (!(stream instanceof Uri)) {
+      return null;
+    }
+
+    final JSONObject item = toJSONObject(context, (Uri) stream);
 
     if (item == null) {
       return null;
@@ -147,14 +154,15 @@ class Serializer {
    *    "name" for the file.
    */
   public static JSONObject toJSONObject(
-          final ContentResolver contentResolver,
+          final Context context,
           final Uri uri)
          throws JSONException
   {
-    if (uri == null) {
+    if (!isShareableUri(context, uri)) {
       return null;
     }
 
+    final ContentResolver contentResolver = context.getContentResolver();
     final JSONObject json = new JSONObject();
     final String type = contentResolver.getType(uri);
     final String suggestedName = getNamefromURI(contentResolver, uri);
@@ -164,6 +172,19 @@ class Serializer {
     json.put("name", suggestedName);
 
     return json;
+  }
+
+  public static boolean isShareableUri(
+          final Context context,
+          final Uri uri)
+  {
+    if (uri == null || !"content".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null) {
+      return false;
+    }
+
+    final ProviderInfo provider = context.getPackageManager().resolveContentProvider(uri.getHost(), 0);
+
+    return provider == null || !context.getPackageName().equals(provider.packageName);
   }
 
   public static String getNamefromURI(
@@ -182,7 +203,10 @@ class Serializer {
       return "";
     }
 
-    cursor.moveToFirst();
+    if (!cursor.moveToFirst()) {
+      cursor.close();
+      return "";
+    }
 
     final String result = cursor.getString(column_index);
     cursor.close();
