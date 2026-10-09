@@ -53,6 +53,11 @@ cordova plugin add cordova-plugin-openwith \
 
 It shouldn't be too hard. But just in case, Jean-Christophe Hoelt [posted a screencast of it](https://youtu.be/eaE4m_xO1mg).
 
+If you want to launch it as a task independent of chrome 83 or higher, please add the following.
+```
+<custom-preference name="android-manifest/application/activity/@android:name" value="OpenWithActivity" />
+```
+
 ## Usage
 
 ```js

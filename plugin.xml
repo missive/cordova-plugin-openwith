@@ -128,8 +128,12 @@ SOFTWARE.
     </config-file>
 
     <!-- cordova plugin src files -->
+    <source-file src="src/android/com/missiveapp/openwith/OpenWithActivity.java" target-dir="src/com/missiveapp/openwith" />
     <source-file src="src/android/com/missiveapp/openwith/OpenWithPlugin.java" target-dir="src/com/missiveapp/openwith" />
     <source-file src="src/android/com/missiveapp/openwith/PluginResultSender.java" target-dir="src/com/missiveapp/openwith" />
     <source-file src="src/android/com/missiveapp/openwith/Serializer.java" target-dir="src/com/missiveapp/openwith" />
+
+    <!-- Cordova hooks -->
+    <hook type="after_plugin_install" src="hooks/androidEmbedPackageName.js" />
   </platform>
 </plugin>
